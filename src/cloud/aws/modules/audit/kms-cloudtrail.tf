@@ -1,5 +1,5 @@
 resource "aws_kms_key" "trail" {
-  description = "Cloudtrail ${local.name_label} and S3"
+  description = "Cloudtrail ${local.id_label} and S3"
 
   // -- Lifecycle
   deletion_window_in_days = 7
@@ -10,14 +10,14 @@ resource "aws_kms_key" "trail" {
   multi_region = false
 
   tags = {
-    "Description"                       = "Cloudtrail ${local.name_label} and S3"
-    "Name"                              = "cloudtrail/${local.name_label}"
+    "Description"                       = "Cloudtrail ${local.id_label} and S3"
+    "Name"                              = "cloudtrail/${local.id_label}"
     "Unikie:InfoSec:DataClassification" = "Extreme"
   }
 }
 
 resource "aws_kms_alias" "trail" {
-  name          = "alias/cloudtrail/${local.name_label}"
+  name          = "alias/cloudtrail/${local.id_label}"
   target_key_id = aws_kms_key.trail.key_id
 }
 
@@ -74,7 +74,7 @@ data "aws_iam_policy_document" "trail_kms_permissions" {
       test     = "StringEquals"
       variable = "aws:SourceArn"
       values = [
-        "arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/${local.name_label}",
+        "arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/${local.id_label}",
       ]
     }
 

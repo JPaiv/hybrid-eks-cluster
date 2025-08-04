@@ -1,5 +1,5 @@
 resource "aws_kms_key" "cloudwatch" {
-  description = "Cloudwatch ${local.name_label} Log Group"
+  description = "Cloudwatch ${local.id_label} Log Group"
 
   // -- Lifecycle
   deletion_window_in_days = 7
@@ -10,14 +10,14 @@ resource "aws_kms_key" "cloudwatch" {
   multi_region = false
 
   tags = {
-    "Description"                       = "Cloudwatch ${local.name_label} Log Group"
-    "Name"                              = "cloudwatch/${local.name_label}"
+    "Description"                       = "Cloudwatch ${local.id_label} Log Group"
+    "Name"                              = "cloudwatch/${local.id_label}"
     "Unikie:InfoSec:DataClassification" = "Extreme"
   }
 }
 
 resource "aws_kms_alias" "cloudwatch" {
-  name          = "alias/cloudwatch/${local.name_label}"
+  name          = "alias/cloudwatch/${local.id_label}"
   target_key_id = aws_kms_key.cloudwatch.key_id
 }
 

@@ -1,7 +1,7 @@
 resource "aws_cloudtrail" "this" {
   // -- General
   enable_log_file_validation = true
-  name                       = local.name_label
+  name                       = local.id_label
 
   // -- Cloudwatch
   cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.this.arn}:*" // --  CloudTrail Requires Wildcard
@@ -25,6 +25,6 @@ resource "aws_cloudtrail" "this" {
 
   tags = {
     "Description" = "Track Events In All Regions"
-    "Name"        = local.name_label
+    "Name"        = local.id_label
   }
 }
