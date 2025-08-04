@@ -1,0 +1,86 @@
+authentik:
+  # -- Used to sign cookies and user ID's
+  secret_key: ${secret_key}
+  # -- AWS RDS
+  postgresql:
+    host: ${rds_host}
+    name: ${rds_name}
+    password: ${rds_pass}
+    port: ${rds_port}
+  # -- AWS Elasticache Redis
+  redis:
+    host: ${redis_host}
+    password: ${redis_pass}
+    port: ${redis_port}
+    tls: true
+    tls_reqs: required
+  # -- AWS SES
+  email:
+    from: ${email_from}
+    host: email-smtp.eu-central-1.amazonaws.com
+    password: ${email_pass}
+    port: 587
+    use_tls: true
+    username: ${email_username}
+
+server:
+  replicas: 2
+  autoscaling:
+    enabled: true
+    maxReplicas: 10
+    minReplicas: 2
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 400m
+      memory: 1Gi
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    hosts:
+      - ${domain_name}
+    tls:
+      - hosts:
+          - ${domain_name}
+    annotations:
+      # -- Core ALB Behavior
+      alb.ingress.kubernetes.io/load-balancer-attributes: routing.http2.enabled=true
+      alb.ingress.kubernetes.io/load-balancer-name: ${id_label}
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      # -- Listener, TLS, and Redirection Rules
+      alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-2017-01
+      # -- Backend Target Group and Health Checks
+      alb.ingress.kubernetes.io/backend-protocol: HTTP
+      alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+      alb.ingress.kubernetes.io/healthcheck-path: "/-/health/live/"
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+      alb.ingress.kubernetes.io/success-codes: "200"
+
+worker:
+  enabled: true
+  autoscaling:
+    enabled: true
+    maxReplicas: 10
+    minReplicas: 2
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 400m
+      memory: 1Gi
+
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
