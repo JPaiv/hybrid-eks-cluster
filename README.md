@@ -1,21 +1,32 @@
-# tf-tg-eks
-Open Tofu, Terragrunt and EKS system
+# tf‑tg‑eks
 
-graph TD
-    subgraph "AWS Cloud"
-        subgraph "VPC: [per-ec1-prod-main]"
-            subgraph "Public Subnets"
-                A[NAT Gateway 1]
-                B[NAT Gateway 2]
-                B[NAT Gateway 3]
-            end
-            subgraph "Private Subnets"
-                C[EKS Node Group 1]
-                D[EKS Node Group 2]
-                D[EKS Node Group 3]
-            end
-        end
-        E[EKS Control Plane]
-        F[S3 Bucket for Terraform State]
-        G[DynamoDB Table for State Locking]
-    end
+A Terragrunt-driven, opinionated Terraform setup to provision production-grade Amazon EKS clusters.
+
+This project builds upon Particule’s tEKS framework, combining Terraform modules and Terragrunt orchestration to deliver a ready-to-run EKS cluster with sensible defaults and built‑in add‑ons
+
+
+## 🧩 What It Does
+    Orchestrates infrastructure using Terraform and Terragrunt
+    Provisions a VPC (via terraform‑aws‑vpc), EKS cluster (terraform‑aws‑eks), and curated Kubernetes add-ons (terraform‑kubernetes‑addons)
+    Supports multi‑cluster deployments with minimal setup and automated configuration
+
+## 📦 Requirements
+    Open Tofu
+    Terragrunt
+    AWS credentials configured for CLI access
+
+## 🗂️ Directory Structure
+    ├── src/
+        └── cloud/
+                └── aws/
+                │     └── prod/
+                └── modules/
+
+## ⚙️ Customization & Variables
+    Default variables can be overridden in .tfvars files per environment
+    Customize VPC CIDR, number of AZs, node group settings, add-ons, cluster version, IAM roles, etc.
+
+## 🔧 Add‑On Support
+    The setup includes sensible configuration for Kubernetes add-ons such as:
+        CoreDNS
+        EBS CSI
