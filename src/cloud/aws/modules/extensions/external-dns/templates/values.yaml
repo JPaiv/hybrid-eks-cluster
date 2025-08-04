@@ -1,0 +1,22 @@
+provider:
+  name: aws
+
+serviceAccount:
+  name: ${irsa_name}
+  annotations:
+    eks.amazonaws.com/role-arn: ${irsa_arn}
+  labels:
+    app.kubernetes.io/component: external-dns
+    app.kubernetes.io/managed-by: tofu-helm
+    app.kubernetes.io/name: ${irsa_name}
+    app.kubernetes.io/part-of: networking
+    app.kubernetes.io/stage: ${stage}
+    app.kubernetes.io/version: ${chart_version}
+
+env:
+  - name: AWS_DEFAULT_REGION
+    value: ${region}
+
+tolerations:
+  - key: CriticalExtensionsOnly
+    operator: Exists
