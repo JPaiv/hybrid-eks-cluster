@@ -2,7 +2,6 @@
 provider "aws" {
   region = "eu-central-1"
   // -- Only these AWS Account IDs may be operated on by this template
-  allowed_account_ids = ["156041409035"]
   default_tags {
     tags = {
       "Description"                  = "Placeholder"
