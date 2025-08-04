@@ -149,12 +149,12 @@ ENV PATH="/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sb
 # --Set time zone to Helsinki
 ENV TZ="Europe/Helsinki"
 
-# -- Use the default non-root user
-USER vscode
-
 # -- Run post-start script to see that everything works
 COPY post-start.sh /usr/local/bin/post-start
 
 # -- Allow Terragrunt and post-start devcontainer script
 RUN chmod +x /usr/local/bin/post-start \
     && chmod u+x /usr/local/bin/terragrunt
+
+# -- Use the default non-root user
+USER vscode
