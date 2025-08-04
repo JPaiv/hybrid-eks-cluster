@@ -1,0 +1,41 @@
+clusterName: ${eks_cluster_id}
+region: ${current_region}
+vpcId: ${vpc_id}
+
+serviceAccount:
+  create: true
+  name: ${irsa_name}
+  annotations:
+    eks.amazonaws.com/role-arn: ${irsa_arn}
+    eks.amazonaws.com/sts-regional-endpoints: "true"
+  labels:
+    app.kubernetes.io/component: aws-lb-controller
+    app.kubernetes.io/managed-by: tofu-helm
+    app.kubernetes.io/name: ${irsa_name}
+    app.kubernetes.io/part-of: aws-networking
+    app.kubernetes.io/stage: ${stage}
+    app.kubernetes.io/version: ${chart_version}
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 300m
+    memory: 300Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+
+tolerations:
+  - key: CriticalExtensionsOnly
+    operator: Exists
