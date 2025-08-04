@@ -2,7 +2,7 @@ name: DevOps Workflow
 
 on:
   push:
-    branches: ["**"]
+    branches: [! main]
     paths: ["src/aws/**"]
 
 permissions:
