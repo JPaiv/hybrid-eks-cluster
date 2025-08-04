@@ -1,0 +1,65 @@
+# -- Webhook crd causes an unsolvable error
+karpenter-crd:
+  webhook:
+    enabled: false
+
+karpenter:
+  enabled: true
+  webhook:
+    enabled: false
+
+settings:
+  clusterName: ${cluster_id}
+  clusterEndpoint: ${cluster_endpoint}
+  interruptionQueueName: ${queue_name}
+
+serviceAccount:
+  name: ${irsa_name}
+  annotations:
+    eks.amazonaws.com/role-arn: ${irsa_arn}
+  labels:
+    app.kubernetes.io/component: irsa
+    app.kubernetes.io/instance: ${irsa_arn}
+    app.kubernetes.io/managed-by: tofu-helm
+    app.kubernetes.io/name: ${irsa_name}
+    app.kubernetes.io/part-of: karpenter
+    app.kubernetes.io/version: ${chart_version}
+
+controller:
+  resources:
+    limits:
+      cpu: 2
+      memory: 2Gi
+    requests:
+      cpu: 1
+      memory: 1Gi
+  livenessProbe:
+    initialDelaySeconds: 1600
+    timeoutSeconds: 1300
+    httpGet:
+      path: /healthz
+      port: http
+  readinessProbe:
+    initialDelaySeconds: 1540
+    timeoutSeconds: 1300
+    httpGet:
+      path: /readyz
+      port: http
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: role
+          operator: In
+          values:
+          - core
+
+tolerations:
+- key: "coreAddonsOnly"
+  operator: "Equal"
+  value: "true"
+  effect: "NoExecute"
+
+logLevel: info

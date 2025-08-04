@@ -1,0 +1,82 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: default
+  labels:
+    app.kubernetes.io/component: NodePool
+    app.kubernetes.io/instance: ${cluster_id}-karpenter-node
+    app.kubernetes.io/managed-by: tofu-manifest
+    app.kubernetes.io/name: default
+    app.kubernetes.io/part-of: karpenter
+    app.kubernetes.io/stage: ${stage}
+    type: karpenter
+spec:
+  # Template section that describes how to template out NodeClaim resources that Karpenter will provision
+  # Karpenter will consider this template to be the minimum requirements needed to provision a Node using this NodePool
+  # It will overlay this NodePool with Pods that need to schedule to further constrain the NodeClaims
+  # Karpenter will provision to launch new Nodes for the cluster
+  template:
+    metadata:
+      labels:
+        name: default
+    spec:
+      # References the Cloud Provider's NodeClass resource, see your cloud provider specific documentation
+      nodeClassRef:
+        group: karpenter.k8s.aws # Updated since only a single version will be served
+        kind: EC2NodeClass
+        name: default
+      # The amount of time a Node can live on the cluster before being removed
+      # Avoiding long-running Nodes helps to reduce security vulnerabilities as well as to reduce the chance of issues that can plague Nodes with long uptimes such as file fragmentation or memory leaks from system processes
+      # You can choose to disable expiration entirely by setting the string value 'Never' here
+
+      # Note: changing this value in the nodepool will drift the nodeclaims.
+      expireAfter: 24h
+
+      # The amount of time that a node can be draining before it's forcibly deleted. A node begins draining when a delete call is made against it, starting
+      # its finalization flow. Pods with TerminationGracePeriodSeconds will be deleted preemptively before this terminationGracePeriod ends to give as much time to cleanup as possible.
+      # If your pod's terminationGracePeriodSeconds is larger than this terminationGracePeriod, Karpenter may forcibly delete the pod
+      # before it has its full terminationGracePeriod to cleanup.
+
+      # Note: changing this value in the nodepool will drift the nodeclaims.
+      terminationGracePeriod: 48h
+
+      # Requirements that constrain the parameters of provisioned nodes.
+      # These requirements are combined with pod.spec.topologySpreadConstraints, pod.spec.affinity.nodeAffinity, pod.spec.affinity.podAffinity, and pod.spec.nodeSelector rules.
+      # Operators { In, NotIn, Exists, DoesNotExist, Gt, and Lt } are supported.
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#operators
+      requirements:
+        - key: "node.kubernetes.io/instance-type"
+          operator: In
+          values:
+            - "c5.large"
+            - "c5.xlarge"
+            - "c5.2xlarge"
+            - "c5.4xlarge"
+            - "c5a.2xlarge"
+            - "c5a.4xlarge"
+            - "c5a.xlarge"
+            - "r4.2xlarge"
+            - "r4.4xlarge"
+            - "r4.xlarge"
+            - "t3.2xlarge"
+            - "t3.xlarge"
+            - "t3.large"
+            - "t3.medium"
+        - key: "karpenter.sh/capacity-type"
+          operator: In
+          values:
+            - "on-demand"
+            - "spot"
+        - key: "kubernetes.io/arch"
+          operator: In
+          values:
+            - "amd64"
+
+  # Disruption section which describes the ways in which Karpenter can disrupt and replace Nodes
+  # Configuration in this section constrains how aggressive Karpenter can be with performing operations
+  # like rolling Nodes due to them hitting their maximum lifetime (expiry) or scaling down nodes to reduce cluster cost
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 1m
+  limits:
+    cpu: 100
