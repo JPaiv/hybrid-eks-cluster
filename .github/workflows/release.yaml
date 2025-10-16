@@ -9,10 +9,10 @@ jobs:
     name: Semantic Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write # -- Publish a GitHub release
-      id-token: write # -- Use of OIDC for npm provenance
-      issues: write # -- Comment on released issues
-      pull-requests: write # -- Comment on released pull requests
+      contents: write # Publish a GitHub release
+      id-token: write # Use of OIDC for npm provenance
+      issues: write # Comment on released issues
+      pull-requests: write # Comment on released pull requests
 
     steps:
       - name: Checkout
@@ -22,8 +22,7 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         with:
           extra_plugins: |
-            @semantic-release/commit-analyzer
+            @semantic-release/changelog
             @semantic-release/git
-            @semantic-release/release-notes-generator
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
