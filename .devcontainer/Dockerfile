@@ -1,160 +1,160 @@
-### --- Builder base image for depencies ---
+# ---------- Stage 1/3: Base builder ----------
+FROM alpine:3.22.1 AS base-builder
 
-# -- Base image to install depencies
-FROM alpine:3.22.1 AS builder
-
-# -- Install depencies as root
-USER root
-
-# -- Install OS packages
+# OS packages
 RUN apk update \
-    && apk upgrade \
     && apk add --no-cache \
-    bash=5.2.37-r0 \
-    curl=8.14.1-r1
+    bash \
+    curl
 
-# -- Set workdir to the project name
-WORKDIR /usr/src/dev-sec-ops
+# -----------------------------------------------------------------------------
+# KUBERNETES
+# -----------------------------------------------------------------------------
 
-## -- Languages
+# Helm
+RUN curl -sL https://get.helm.sh/helm-v3.19.0-linux-amd64.tar.gz -o helm.tar.gz \
+    && tar -xzf helm.tar.gz \
+    && rm helm.tar.gz \
+    && mv linux-amd64/helm /usr/local/bin
 
-# -- Golang
-RUN wget "https://go.dev/dl/go1.24.0.linux-amd64.tar.gz" -O "go.tar.gz" \
-    && tar -xzvf "go.tar.gz" -C /usr/local/bin \
-    && rm "go.tar.gz"
+# Eksctl
+RUN curl -sL https://github.com/eksctl-io/eksctl/releases/download/v0.215.0/eksctl_Linux_amd64.tar.gz -o eksctl.tar.gz \
+    && tar -xzf eksctl.tar.gz \
+    && rm eksctl.tar.gz \
+    && mv eksctl /usr/local/bin
 
-# -- Rust
-RUN curl "https://sh.rustup.rs" -sSf | sh -s -- -y
+# Kubectl
+RUN curl -sL https://dl.k8s.io/release/1.34.1/bin/linux/amd64/kubectl -o kubectl \
+    && mv kubectl /usr/local/bin/
 
-## -- Docker
+# Kubecolor
+RUN curl -sL https://github.com/kubecolor/kubecolor/releases/download/v0.5.2/kubecolor_0.5.2_linux_amd64.tar.gz -o kubecolor.tar.gaz \
+    && tar -xzf kubecolor.tar.gaz \
+    && rm kubecolor.tar.gaz \
+    && mv kubecolor /usr/local/bin
 
-# -- Docker Engine
-RUN curl -sL "https://download.docker.com/linux/static/stable/x86_64/docker-27.5.1.tgz" -o "docker.tgz" \
-    && tar xzvf "docker.tgz" && rm "docker.tgz" \
-    && cp docker/* /usr/local/bin
+# K9s
+RUN curl -SL https://github.com/derailed/k9s/releases/download/v0.50.15/k9s_Linux_amd64.tar.gz -o k9s.tar.gz \
+    && tar -xzf k9s.tar.gz \
+    && rm k9s.tar.gz \
+    && mv k9s /usr/local/bin
 
-# -- Moby BuiltKit
-RUN curl -sL "https://github.com/moby/buildkit/releases/download/v0.19.0/buildkit-v0.19.0.darwin-amd64.tar.gz" -o "moby.tar.gz" \
-    && tar -xzf "moby.tar.gz" \
-    && rm "moby.tar.gz" \
-    && mv bin/* /usr/local/bin
+# Cilium CLI
+RUN curl -sL https://github.com/cilium/cilium-cli/releases/download/v0.18.4/cilium-linux-amd64.tar.gz -o cilium.tar.gz \
+    && tar -xzf cilium.tar.gz \
+    && rm cilium.tar.gz \
+    && mv cilium /usr/local/bin
 
-## -- Kubernetes
+# ArgoCD CLI
+RUN curl -sSL https://github.com/argoproj/argo-cd/releases/download/v3.1.8/argocd-linux-amd64 -o argocd \
+    && mv argocd /usr/local/bin/
 
-# -- Install Helm
-RUN curl -sL "https://get.helm.sh/helm-v3.17.4-linux-amd64.tar.gz" -o "helm.tar.gz" \
-    && tar -xzf "helm.tar.gz" && rm "helm.tar.gz" \
-    && mv "linux-amd64/helm" /usr/local/bin
+# Hubble CLI
+RUN curl -sL https://github.com/cilium/hubble/releases/download/v1.18.0/hubble-linux-amd64.tar.gz -o hubble.tar.gz \
+    && tar -xzf hubble.tar.gz \
+    && rm hubble.tar.gz \
+    && mv hubble /usr/local/bin
 
-# -- Install eksctl
-RUN curl -sL "https://github.com/eksctl-io/eksctl/releases/download/v0.211.0/eksctl_Linux_amd64.tar.gz" -o "eksctl.tar.gz" \
-    && tar -xzf "eksctl.tar.gz" \
-    && rm "eksctl.tar.gz" \
-    && mv "eksctl" /usr/local/bin
+# -----------------------------------------------------------------------------
+# INFRASTRUCSTURE-AS-CODE
+# -----------------------------------------------------------------------------
 
-# -- Install Kubectl latest
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
-    && install -o root -g root -m 0755 "kubectl" /usr/local/bin/
+# Terraform
+RUN curl -sL https://releases.hashicorp.com/terraform/1.13.3/terraform_1.13.3_linux_amd64.zip -o terraform.zip \
+    && unzip terraform.zip \
+    && rm terraform.zip \
+    && mv terraform /usr/local/bin/
 
-# -- Install Kubecolor
-RUN curl -sL "https://github.com/kubecolor/kubecolor/releases/download/v0.5.1/kubecolor_0.5.1_linux_amd64.tar.gz" -o "kubecolor.tar.gaz" \
-    && tar -xzf "kubecolor.tar.gaz" -C /tmp \
-    && rm "kubecolor.tar.gaz" \
-    && mv "/tmp/kubecolor" /usr/local/bin
+# OpenTofu
+RUN curl -sL https://github.com/opentofu/opentofu/releases/download/v1.10.6/tofu_1.10.6_linux_amd64.tar.gz -o tofu.tar.gz \
+    && tar -xzf tofu.tar.gz \
+    && rm tofu.tar.gz \
+    && mv tofu /usr/local/bin/
 
-# -- Install K9S
-RUN curl -SL "https://github.com/derailed/k9s/releases/download/v0.50.9/k9s_Linux_amd64.tar.gz" -o "k9s.tar.gz" \
-    && tar -xzf "k9s.tar.gz" \
-    && mv "k9s" /usr/local/bin
+# Terragrunt
+RUN curl -sL https://github.com/gruntwork-io/terragrunt/releases/download/v0.90.0/terragrunt_linux_amd64 -o terragrunt \
+    && mv terragrunt /usr/local/bin/
 
-# -- Cilium CLI
-RUN curl -sL "https://github.com/cilium/cilium-cli/releases/download/v0.18.4/cilium-linux-amd64.tar.gz" -o "cilium.tar.gz" \
-    && tar -xzf "cilium.tar.gz" \
-    && rm "cilium.tar.gz" \
-    && mv "cilium" /usr/local/bin
+# Terraform-docs
+RUN curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.20.0/terraform-docs-v0.20.0-Linux-amd64.tar.gz \
+    && tar -xzf terraform-docs.tar.gz \
+    && rm terraform-docs.tar.gz \
+    && mv terraform-docs /usr/local/bin/terraform-docs
 
-## -- IaC
+# Tfsec
+RUN curl -SL https://github.com/aquasecurity/tfsec/releases/download/v1.28.14/tfsec-checkgen-linux-amd64 -o tfsec \
+    && mv tfsec /usr/local/bin/
 
-# -- Terraform
-RUN curl -sL "https://releases.hashicorp.com/terraform/1.12.2/terraform_1.12.2_linux_amd64.zip" -o "terraform.zip" \
-    && unzip "terraform.zip" \
-    && rm "terraform.zip" \
-    && mv "terraform" /usr/local/bin/
+# -----------------------------------------------------------------------------
+# CLOUD TOOLS
+# -----------------------------------------------------------------------------
 
-# -- OpenTofu
-RUN curl -sL "https://github.com/opentofu/opentofu/releases/download/v1.10.3/tofu_1.10.3_linux_amd64.tar.gz" -o "tofu.tar.gz" \
-    && tar -xzf "tofu.tar.gz" \
-    && rm "tofu.tar.gz" \
-    && mv "tofu" /usr/local/bin/
+# Cloud-Nuke
+RUN curl -sL https://github.com/gruntwork-io/cloud-nuke/releases/download/v0.43.0/cloud-nuke_linux_amd64 -o cloud-nuke \
+    && mv cloud-nuke /usr/local/bin/
 
-# -- Terragrunt
-RUN curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/v0.83.2/terragrunt_linux_amd64" -o "terragrunt" \
-    && chmod u+x "terragrunt" \
-    && mv "terragrunt" /usr/local/bin/
+# AWS CLI v2 Latest
+RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip \
+    && unzip awscliv2.zip \
+    && rm -r awscliv2.zip \
+    &&  ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli
 
-# -- Install Terraform-docs
-RUN curl -sSLo ./terraform-docs.tar.gz "https://terraform-docs.io/dl/v0.20.0/terraform-docs-v0.20.0-Linux-amd64.tar.gz" \
-    && tar -xzf "terraform-docs.tar.gz" \
-    && rm "terraform-docs.tar.gz" \
-    && chmod +x "terraform-docs" \
-    && mv "terraform-docs" /usr/local/bin/terraform-docs
+# -----------------------------------------------------------------------------
+# LOCAL DEV ENV
+# -----------------------------------------------------------------------------
 
-# -- Tfsec
-RUN curl -SL "https://github.com/aquasecurity/tfsec/releases/download/v1.28.14/tfsec-checkgen-linux-amd64" -o "tfsec" \
-    && chmod +x "tfsec" \
-    &&  mv "tfsec" /usr/local/bin/
+# Tilt
+RUN curl -fsSL https://github.com/tilt-dev/tilt/releases/download/v0.35.1/tilt.0.35.1.linux.x86_64.tar.gz -o tilt.tar.gz \
+    && tar -xzf tilt.tar.gz \
+    && rm tilt.tar.gz \
+    && mv tilt /usr/local/bin/
 
-## -- Cloud
+# ---------- Stage 2/3: Node builder ----------
+FROM node:24.8.0 AS node-builder
 
-# -- Cloud-nuke
-RUN curl -sLO "https://github.com/gruntwork-io/cloud-nuke/releases/download/v0.41.0/cloud-nuke_linux_amd64" \
-    && mv "cloud-nuke_linux_amd64" "cloud-nuke" \
-    && chmod +x "cloud-nuke" \
-    && mv "cloud-nuke" /usr/local/bin/
+# Typescript
+# TSX
+# Semantic release
+# Verify versions
+RUN npm install -g \
+    @types/node \
+    tsx \
+    typescript \
+    typescript ts-node
 
-# -- Install AWS CLI v2 Latest
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-    && unzip "awscliv2.zip" \
-    &&  ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli \
-    && rm -r "awscliv2.zip"
-
-# -- Install ArgoCD CLI
-RUN curl -sL "https://github.com/argoproj/argo-cd/releases/download/v3.6.0/argocd-linux-amd64" -o "argocd" \
-    && install -m 555 "argocd" /usr/local/bin/argocd \
-    && rm "argocd"
-
-### -- Runtime Devcontainer
-
-# -- Build the runtime devcontainer
+# ---------- Stage 3/3: Runtime devcontainer ----------
 FROM mcr.microsoft.com/devcontainers/base:ubuntu AS runtime
 
-# -- Install depencies as root
-USER root
+# Depencies
+COPY --chmod=765 --from=base-builder /usr/local/bin /usr/local/bin
 
-# -- Set workdir to project name
-WORKDIR /usr/src/dev-sec-ops
+# AWS CLI v2
+COPY --chmod=765 --from=base-builder /usr/local/aws-cli /usr/local/aws-cli
 
-# -- Bin depencies
-COPY --from=builder /usr/local/bin /usr/local/bin
+# Node
+COPY --chmod=765 --from=node-builder /usr/local/bin /usr/local/bin
+COPY --chmod=765 --from=node-builder /usr/local/lib/node_modules /usr/local/lib/node_modules
 
-# -- AWS CLI v2
-COPY --from=builder /usr/local/aws-cli /usr/local/aws-cli
+# Devcontainer post-start script
+COPY --chmod=765 post-start.sh /usr/local/bin/post-start
 
-# -- Rust
-COPY --from=builder /root/.cargo/ /root/.cargo/
+# DEPENCIES
+# Python3
+# C++
+# Common utils
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-venv  \
+    apache2-utils \
+    bash-completion \
+    ripgrep \
+    && rm -rf /var/lib/apt/lists/*
 
-# -- Set PATH to all depencies
-ENV PATH="/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin"
+# PATH
+ENV PATH="${PATH}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-# --Set time zone to Helsinki
+# Set time zone to Helsinki
 ENV TZ="Europe/Helsinki"
 
-# -- Run post-start script to see that everything works
-COPY post-start.sh /usr/local/bin/post-start
-
-# -- Allow Terragrunt and post-start devcontainer script
-RUN chmod +x /usr/local/bin/post-start \
-    && chmod u+x /usr/local/bin/terragrunt
-
-# -- Use the default non-root user
 USER vscode
