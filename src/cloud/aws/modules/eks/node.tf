@@ -1,34 +1,53 @@
-// -- Bottlerocket Node Group without Karpenter
-// -- Karpenter needs to be deployed on Nodes not controlled by Karpenter
-resource "aws_eks_node_group" "this" {
-  // -- Naming
-  node_group_name = "${aws_eks_cluster.this.name}-core"
+# ---------------------------------------------------------------------------------------------------------------------
+# EKS CLUSTER MANAGED BOTTLEROCKET NODE GROUP
+# Operator instructions: deploy the EKS Cluster without this file.
+# -> Cilium needs to be deployed simultaniously, or else the cluster has no CNI
+# -> Cilium is in the modules/addons/cilium
+# ---------------------------------------------------------------------------------------------------------------------
 
-  // -- General
-  ami_type      = "CUSTOM"
-  cluster_name  = aws_eks_cluster.this.name
-  node_role_arn = aws_iam_role.node.arn
-  subnet_ids    = var.private_subnet_ids
+# Get the latest AWS Bottlerocket OS
+data "aws_ami" "bottlerocket" {
+  most_recent = true
+  owners = [
+    "amazon",
+  ]
+
+  filter {
+    name = "name"
+    values = [
+      "bottlerocket-aws-k8s-${var.cluster_version}-x86_64-*",
+    ]
+  }
+}
+
+resource "aws_eks_node_group" "this" {
+  #General
+  ami_type        = "CUSTOM"
+  node_group_name = "${aws_eks_cluster.this.name}-critical"
+  cluster_name    = aws_eks_cluster.this.name
+  node_role_arn   = aws_iam_role.node.arn
+  subnet_ids      = var.private_subnet_ids
 
   labels = {
     role = "core"
   }
 
-  // -- Prevent pod schedule before the Cilium is ready
+  # Prevent pod schedule before the Cilium controller is ready
   taint {
     key    = "node.cilium.io/agent-not-ready"
     value  = "true"
     effect = "NO_EXECUTE"
   }
 
+  # Only mission-critical addons such as Karpenter and Cilium
   taint {
-    key    = "coreAddonsOnly"
+    key    = "CriticalAddonsOnly"
     value  = "true"
     effect = "NO_EXECUTE"
   }
 
   launch_template {
-    name    = aws_launch_template.this.name
+    name    = "${aws_eks_cluster.this.name}-critical"
     version = aws_launch_template.this.latest_version
   }
 
@@ -43,21 +62,22 @@ resource "aws_eks_node_group" "this" {
   }
 
   tags = {
-    "Description"                                            = "Cilium And Karpenter Controllers Managed Node Group"
-    "Name"                                                   = var.id_label
+    "Description"                                            = "Managed Node Group for the Karpenter and Cilium addon controllers"
+    "Name"                                                   = "${aws_eks_cluster.this.name}-critical"
     "k8s.io/cluster-autoscaler/${aws_eks_cluster.this.name}" = "owned"
     "k8s.io/cluster-autoscaler/enabled"                      = true
     "kubernetes.io/cluster/${aws_eks_cluster.this.name}"     = "owned"
   }
 }
 
-// -- Cilium and Karpenter Controllers EC2 Bottlerocket Instances
+# Cilium and Karpenter Controllers EC2 Bottlerocket Instances template
+# -> Karpenter handles non-critical workloads
 resource "aws_launch_template" "this" {
   disable_api_stop        = false
   disable_api_termination = false
-  image_id                = data.aws_ami.bottlerocket_image.id
+  image_id                = data.aws_ami.bottlerocket.id
   instance_type           = "t3.medium"
-  name                    = "${aws_eks_cluster.this.name}-core"
+  name                    = "${aws_eks_cluster.this.name}-critical"
 
   user_data = base64encode(<<-EOT
     [settings.kubernetes]
@@ -119,8 +139,8 @@ resource "aws_launch_template" "this" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "Description"                                            = "Bottlerocket EC2 Managed Node Group Instance"
-      "Name"                                                   = var.id_label
+      "Description"                                            = "Managed Node Group Bottlerocket EC2 Instance for the Karpenter and Cilium addon controllers"
+      "Name"                                                   = "${aws_eks_cluster.this.name}-critical"
       "k8s.io/cluster-autoscaler/${aws_eks_cluster.this.name}" = "owned"
       "k8s.io/cluster-autoscaler/enabled"                      = true
       "kubernetes.io/cluster/${aws_eks_cluster.this.name}"     = "owned"
@@ -130,8 +150,8 @@ resource "aws_launch_template" "this" {
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "Description"                                            = "Bottlerocket EC2 Managed Node Group EBS Volume"
-      "Name"                                                   = var.id_label
+      "Description"                                            = "Managed Node Group Bottlerocket EBS Volume for the Karpenter and Cilium addon controllers"
+      "Name"                                                   = "${aws_eks_cluster.this.name}-critical"
       "k8s.io/cluster-autoscaler/${aws_eks_cluster.this.name}" = "owned"
       "k8s.io/cluster-autoscaler/enabled"                      = true
       "kubernetes.io/cluster/${aws_eks_cluster.this.name}"     = "owned"
@@ -139,8 +159,8 @@ resource "aws_launch_template" "this" {
   }
 
   tags = {
-    "Description"                                        = "Bottlerocket EC2 Managed Node Group Launch Template"
-    "Name"                                               = var.id_label
+    "Description"                                        = "Managed Node Group Launch Template for the Karpenter and Cilium addon controllers"
+    "Name"                                               = "${aws_eks_cluster.this.name}-critical"
     "kubernetes.io/cluster/${aws_eks_cluster.this.name}" = "owned"
   }
 }

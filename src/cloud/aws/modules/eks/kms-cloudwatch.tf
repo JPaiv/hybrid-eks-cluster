@@ -1,17 +1,17 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# EKS CLUSTER CONTROL PLANE LOGS CLOUDWACH LOG GROUP CMKMS
+# Encrypt EKS Cluster control plane logs Cloudwatch Log Group at rest
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_kms_key" "cloudwatch" {
-  // -- General
-  description = "Control Plane Logs Cloudwatch Log Group KMS CM"
-
-  // -- Lifecycle
   deletion_window_in_days = 30
+  description             = "EKS Cluster Control Plane Logs Cloudwatch Log Group CMKMS"
   enable_key_rotation     = true
-
-  // -- Usage
-  key_usage    = "ENCRYPT_DECRYPT"
-  multi_region = false
+  key_usage               = "ENCRYPT_DECRYPT"
+  multi_region            = false
 
   tags = {
-    "Description" = "Control Plane Logs Cloudwatch Log Group KMS CM"
+    "Description" = "EKS Cluster Control Plane Logs Cloudwatch Log Group CMKMS"
     "Name"        = "cloudwatch/${local.cluster_log_group_name}"
   }
 }
@@ -65,18 +65,18 @@ data "aws_iam_policy_document" "cloudwatch_kms_permissions" {
       "*",
     ]
 
+    principals {
+      type = "Service"
+      identifiers = [
+        "logs.${data.aws_region.current.region}.amazonaws.com",
+      ]
+    }
+
     condition {
       test     = "ArnEquals"
       variable = "kms:EncryptionContext:aws:logs:arn"
       values = [
-        "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:${local.cluster_log_group_name}",
-      ]
-    }
-
-    principals {
-      type = "Service"
-      identifiers = [
-        "logs.${data.aws_region.current.name}.amazonaws.com",
+        "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:${local.cluster_log_group_name}",
       ]
     }
   }
