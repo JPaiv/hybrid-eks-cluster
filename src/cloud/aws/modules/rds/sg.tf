@@ -1,6 +1,6 @@
 resource "aws_security_group" "this" {
   description = "Allow traffic only to and from the EKS Worker Nodes"
-  name        = local.id_label
+  name        = "${local.name_label}-sg"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -8,7 +8,7 @@ resource "aws_security_group" "this" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = var.security_group_ids
+    security_groups = [data.aws_eks_cluster.this.vpc_config[0].cluster_security_group_id]
   }
 
   egress {
@@ -16,11 +16,11 @@ resource "aws_security_group" "this" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = var.security_group_ids
+    security_groups = [data.aws_eks_cluster.this.vpc_config[0].cluster_security_group_id]
   }
 
   tags = {
     "Description" = "Allow traffic only to and from the EKS Worker Nodes"
-    "Name"        = local.id_label
+    "Name"        = "${local.name_label}-sg"
   }
 }

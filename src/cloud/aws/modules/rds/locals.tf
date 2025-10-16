@@ -1,3 +1,3 @@
 locals {
-  id_label = "${var.cluster_id}-${var.db_name}"
+  name_label = "${var.id_label}-${var.db_name}"
 }
