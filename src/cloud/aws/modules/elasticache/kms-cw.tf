@@ -1,15 +1,12 @@
 resource "aws_kms_key" "cw" {
-  # -- General
-  description = "KMS key to encrypt CloudWatch logs for ElastiCache: ${local.id_label}"
-  policy      = data.aws_iam_policy_document.cw.json # Attach the policy here
-
-  # -- Lifecycle
-  deletion_window_in_days = 30
+  description             = "CM KMS key for all ElastiCache logs in Cloudwatch"
+  policy                  = data.aws_iam_policy_document.cw.json
+  deletion_window_in_days = 7
   enable_key_rotation     = true
 
   tags = {
     "Name"        = "cw/elasticache/${local.id_label}"
-    "Description" = "KMS key for all ElastiCache CloudWatch logs for ${local.id_label}"
+    "Description" = "CM KMS key for all ElastiCache logs in Cloudwatch"
   }
 }
 
@@ -19,10 +16,11 @@ resource "aws_kms_alias" "cw" {
 }
 
 data "aws_iam_policy_document" "cw" {
-
+  policy_id = "Permissions"
+  version   = "2012-10-17"
   statement {
-    sid    = "EnableIAMUserPermissions"
     effect = "Allow"
+    sid    = "Allow IAM User"
 
     actions = [
       "kms:*",
@@ -60,14 +58,14 @@ data "aws_iam_policy_document" "cw" {
       test     = "ArnEquals"
       variable = "kms:EncryptionContext:aws:logs:arn"
       values = [
-        for log_config in var.elasticache_logs : "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/elasticache/${local.id_label}/${log_config.log_type}"
+        for log_config in var.elasticache_logs : "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/elasticache/${local.id_label}/${log_config.log_type}"
       ]
     }
 
     principals {
       type = "Service"
       identifiers = [
-        "logs.${data.aws_region.current.name}.amazonaws.com",
+        "logs.${data.aws_region.current.region}.amazonaws.com",
       ]
     }
   }
