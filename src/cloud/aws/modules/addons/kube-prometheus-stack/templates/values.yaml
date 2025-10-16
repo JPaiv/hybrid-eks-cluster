@@ -1,0 +1,112 @@
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ${NAME_LABEL}
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 50Gi
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 200Mi
+  resources:
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 200Mi
+
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ${NAME_LABEL}
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
+
+prometheus-node-exporter:
+  tolerations:
+    - effect: "NoExecute"
+      value: "true"
+      key: "CriticalAddonsOnly"
+
+grafana:
+  enabled: true
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: browser
+  admin:
+    existingSecret: ${NAME_LABEL}
+  serviceAccount:
+    create: true
+    name: ${IRSA_NAME}
+    annotations:
+      eks.amazonaws.com/role-arn: ${IRSA_ARN}
+    labels:
+      app.kubernetes.io/component: kube-prometheus-stack
+      app.kubernetes.io/instance: grafana
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${IRSA_NAME}
+      app.kubernetes.io/part-of: monitoring
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    annotations:
+      # Listener & Redirect configuration
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+      alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+      # Health check configuration
+      alb.ingress.kubernetes.io/healthcheck-path: "/"
+      alb.ingress.kubernetes.io/success-codes: 200,302
+      # Load balancer details
+      alb.ingress.kubernetes.io/load-balancer-name: "${NAME_LABEL}-grafana"
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      # Security
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-FS-1-2-2019-08
+      # Metadata & tagging
+      alb.ingress.kubernetes.io/tags: name=${NAME_LABEL}-grafana,stage=${STAGE},team=DevSecOps,tofu-helm=true
+    labels:
+      app.kubernetes.io/component: kube-prometheus-stack
+      app.kubernetes.io/instance: grafana
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${NAME_LABEL}
+      app.kubernetes.io/part-of: monitoring
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+    hosts:
+      - ${INGRESS_URL}
+    tls:
+      - hosts:
+          - ${INGRESS_URL}
+    path: /
+
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 30Gi
+    storageClassName: ${NAME_LABEL}
+    type: sts

@@ -1,0 +1,18 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ${NAME_LABEL}
+  namespace: ${NAMESPACE}
+  labels:
+    app.kubernetes.io/component: kube-prometheus-stack
+    app.kubernetes.io/instance: storage
+    app.kubernetes.io/managed-by: tofu-manifest
+    app.kubernetes.io/name: ${NAME_LABEL}
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/stage: ${STAGE}
+provisioner: ebs.csi.aws.com
+parameters:
+  encrypted: "true"
+  type: gp3
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
