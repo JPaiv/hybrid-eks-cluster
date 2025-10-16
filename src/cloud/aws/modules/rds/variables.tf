@@ -1,66 +1,65 @@
-variable "cluster_id" {
-  description = "Default id(name) from the naming label module."
+variable "id_label" {
+  description = "A unique identifier for the EKS cluster associated with this RDS instance. This is typically derived from a naming label module."
   nullable    = false
   sensitive   = false
   type        = string
 }
 
 variable "priv_subnet_ids" {
-  description = "EKS Cluster Private Subnets"
-  nullable    = false
-  sensitive   = false
-  type        = list(string)
-}
-
-variable "security_group_ids" {
-  description = "All EKS Cluster affiliated security groups"
+  description = "A list of private subnet IDs where the RDS instance will be deployed. These subnets should be part of the EKS cluster's VPC and configured to prevent public access."
   nullable    = false
   sensitive   = false
   type        = list(string)
 }
 
 variable "db_name" {
-  nullable  = false
-  sensitive = false
-  type      = string
+  description = "The name for the database within the RDS instance. This will be the initial database created upon instance launch."
+  nullable    = false
+  sensitive   = false
+  type        = string
 }
 
 variable "db_username" {
-  nullable  = false
-  sensitive = false
-  type      = string
+  description = "The master username for the RDS database instance. This user will have administrative privileges."
+  nullable    = false
+  sensitive   = false
+  type        = string
 }
 
 variable "vpc_id" {
-  nullable  = false
-  sensitive = false
-  type      = string
+  description = "The ID of the VPC (Virtual Private Cloud) where the RDS instance will be provisioned. This should be the same VPC as your EKS cluster."
+  nullable    = false
+  sensitive   = false
+  type        = string
 }
 
 variable "deletion_protection" {
-  default   = false
-  nullable  = false
-  sensitive = false
-  type      = bool
+  description = "When set to true, this prevents the RDS instance from being accidentally deleted. It's highly recommended for production environments."
+  default     = false
+  nullable    = false
+  sensitive   = false
+  type        = bool
 }
 
 variable "skip_final_snapshot" {
-  default   = true
-  nullable  = false
-  sensitive = false
-  type      = bool
+  description = "When set to true, a final DB snapshot is not created before the DB instance is deleted. Set to false for production to retain a snapshot."
+  default     = true
+  nullable    = false
+  sensitive   = false
+  type        = bool
 }
 
 variable "backup_retention_period" {
-  default   = 14
-  nullable  = false
-  sensitive = false
-  type      = number
+  description = "The number of days for which automated backups are retained. A value of 0 disables automated backups. Recommended to be greater than 0 for recovery purposes."
+  default     = 14
+  nullable    = false
+  sensitive   = false
+  type        = number
 }
 
-variable "passw_secr_name" {
-  description = "AWS Secret Manager secret name with the master password"
+variable "vault_name" {
+  description = "The name of the AWS Secrets Manager secret that stores the master password for the RDS instance. This is used to securely retrieve the password during provisioning."
   nullable    = false
-  sensitive   = true
+  sensitive   = false
   type        = string
 }

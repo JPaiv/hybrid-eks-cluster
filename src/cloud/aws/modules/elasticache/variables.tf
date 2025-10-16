@@ -5,40 +5,12 @@ variable "cluster_id" {
   type        = string
 }
 
-variable "priv_subn_ids" {
-  description = "Private Subnet ID's"
-  nullable    = false
-  sensitive   = false
-  type        = list(string)
-}
-
-variable "sg_ids" {
-  description = "Associated VPC security group ID's"
-  nullable    = false
-  sensitive   = false
-  type        = list(string)
-}
-
-variable "eks_sg_id" {
-  description = "AWS managed EKS worker node security group ID"
-  nullable    = false
-  sensitive   = false
-  type        = string
-}
-
 variable "port" {
   description = "Redis port number"
   default     = 6379
   nullable    = false
   sensitive   = false
   type        = number
-}
-
-variable "vpc_id" {
-  description = "Associated VPC security group ID's"
-  nullable    = false
-  sensitive   = false
-  type        = string
 }
 
 variable "cache_name" {
@@ -77,9 +49,23 @@ variable "elasticache_logs" {
   }
 }
 
-variable "pass_secr_name" {
-  description = "Redis auth token AWS Secrets Manager secret name"
+variable "vault_name" {
+  description = "Cache AWS Secrets Manager name"
   nullable    = false
   sensitive   = true
+  type        = string
+}
+
+variable "priv_subnet_ids" {
+  description = "A list of private subnet IDs where the RDS instance will be deployed. These subnets should be part of the EKS cluster's VPC and configured to prevent public access."
+  nullable    = false
+  sensitive   = false
+  type        = list(string)
+}
+
+variable "vpc_id" {
+  description = "The ID of the VPC (Virtual Private Cloud) where the RDS instance will be provisioned. This should be the same VPC as your EKS cluster."
+  nullable    = false
+  sensitive   = false
   type        = string
 }

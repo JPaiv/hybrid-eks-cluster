@@ -1,8 +1,10 @@
 name: Semantic Release
 
 on:
-  push:
-    branches: [main]
+  - pull_request
+
+  # push:
+  #   branches: [main]
 
 jobs:
   semantic-release:
@@ -17,12 +19,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4
         with:
-          extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/git
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Render terraform docs and push changes back to PR
+        uses: terraform-docs/gh-actions@main
+        with:
+          git-push: "true"
+          output-file: README.md
+          output-method: inject
+          recursive: true
+          working-dir: src/cloud/aws
+
+      # - name: Semantic Release
+      #   uses: cycjimmy/semantic-release-action@v4
+      #   with:
+      #     extra_plugins: |
+      #       @semantic-release/changelog
+      #       @semantic-release/git
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

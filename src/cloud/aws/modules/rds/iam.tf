@@ -1,19 +1,19 @@
 resource "aws_iam_role" "this" {
   assume_role_policy = data.aws_iam_policy_document.trust_relationships.json
-  name               = "${local.id_label}-role"
+  name               = "${local.name_label}-role"
 
   tags = {
-    "Description" = "RDS Database ${local.id_label} Cloudwatch RDS Monitoring IAM Role"
-    "Name"        = "${local.id_label}-role"
+    "Description" = "RDS Database ${local.name_label} Cloudwatch RDS Monitoring IAM Role"
+    "Name"        = "${local.name_label}-role"
   }
 }
 
 data "aws_iam_policy_document" "trust_relationships" {
-  policy_id = "TrustRelationships"
+  policy_id = "TrustPolicy"
   version   = "2012-10-17"
   statement {
     effect = "Allow"
-    sid    = "EnableRdsMonitoring"
+    sid    = "AllowServiceAssumeRole"
 
     actions = [
       "sts:AssumeRole"

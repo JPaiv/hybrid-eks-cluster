@@ -1,0 +1,130 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# CILIUM HELM INSTALL PARAMETERS
+# ENI-mode
+# No CNI-chaining
+# Enable Wireguard for node-to-node traffic encryption
+# ---------------------------------------------------------------------------------------------------------------------
+
+# Limit iptables-based egress masquerading to interface selector
+egressMasqueradeInterfaces: eth0
+
+# Enables masquerading of IPv4 traffic leaving the node from endpoints
+enableIPv4Masquerade: false
+
+ipam:
+  mode: eni
+
+eni:
+  enabled: true
+  awsEnablePrefixDelegation: true
+  awsReleaseExcessIPs: true
+  iamRole: ${IRSA_ARN}
+  updateEC2AdapterLimitViaAPI: true
+
+kubeProxyReplacement: true
+
+routingMode: native
+
+envoy:
+  enabled: true
+
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  metrics:
+    enabled:
+      - dns:query;ignoreAAAA
+      - drop
+      - flow
+      - http
+      - icmp
+      - tcp
+  ui:
+    enabled: true
+    backend:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 1024M
+        requests:
+          cpu: 200m
+          memory: 200Mi
+    frontend:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 1024M
+        requests:
+          cpu: 200m
+          memory: 200Mi
+    proxy:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 1024M
+        requests:
+          cpu: 200m
+          memory: 200Mi
+    replicas: 2
+    podAnnotations:
+      app.kubernetes.io/component: cilium
+      app.kubernetes.io/instance: hubble
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${NAME_LABEL}
+      app.kubernetes.io/part-of: ci-cd
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+    updateStrategy:
+      rollingUpdate:
+        maxUnavailable: 1
+      type: RollingUpdate
+    securityContext:
+      enabled: true
+    ingress:
+      enabled: false
+
+# Wireguard for node-to-node traffic encryption
+encryption:
+  enabled: true
+  nodeEncryption: true
+  type: wireguard
+
+gatewayAPI:
+  enabled: true
+  hostNetwork:
+    enabled: true
+
+# For some reason the k8sServiceHost cannot have the https:// as a part of the URL
+k8sServiceHost: ${EKS_ENDPOINT}
+
+k8sServicePort: 443
+
+serviceAccounts:
+  operator:
+    create: true
+    automount: true
+    name: ${IRSA_NAME}
+    annotations:
+      eks.amazonaws.com/role-arn: ${IRSA_ARN}
+
+tolerations:
+  - effect: NoExecute
+    value: "true"
+    key: CriticalAddonsOnly
+  - effect: NoSchedule
+    key: node.kubernetes.io/not-ready
+  - effect: NoExecute
+    value: "true"
+    key: node.cilium.io/agent-not-ready
+
+operator:
+  tolerations:
+    - effect: NoExecute
+      value: "true"
+      key: CriticalAddonsOnly
+    - effect: NoSchedule
+      key: node.kubernetes.io/not-ready
+    - effect: NoExecute
+      value: "true"
+      key: node.cilium.io/agent-not-ready

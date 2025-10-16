@@ -1,23 +1,18 @@
 resource "aws_kms_key" "cloudwatch" {
-  description = "Cloudwatch ${local.id_label} Log Group"
-
-  // -- Lifecycle
   deletion_window_in_days = 7
+  description             = "Cloudwatch ${local.name_label} Log Group"
   enable_key_rotation     = true
-
-  // -- Usage
-  key_usage    = "ENCRYPT_DECRYPT"
-  multi_region = false
+  key_usage               = "ENCRYPT_DECRYPT"
+  multi_region            = false
 
   tags = {
-    "Description"                       = "Cloudwatch ${local.id_label} Log Group"
-    "Name"                              = "cloudwatch/${local.id_label}"
-    "Unikie:InfoSec:DataClassification" = "Extreme"
+    "Description" = "Cloudwatch ${local.name_label} Log Group"
+    "Name"        = "cloudwatch/${local.name_label}"
   }
 }
 
 resource "aws_kms_alias" "cloudwatch" {
-  name          = "alias/cloudwatch/${local.id_label}"
+  name          = "alias/cloudwatch/${local.name_label}"
   target_key_id = aws_kms_key.cloudwatch.key_id
 }
 
@@ -26,7 +21,7 @@ resource "aws_kms_key_policy" "cloudwatch" {
   policy = data.aws_iam_policy_document.cloudwatch.json
 }
 
-// ref: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html
+# ref: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html
 data "aws_iam_policy_document" "cloudwatch" {
   policy_id = "Permissions"
   version   = "2012-10-17"

@@ -1,47 +1,47 @@
 resource "aws_db_instance" "this" {
-  // -- General
+  # General
   engine         = "postgres"
   engine_version = "16.8"
-  identifier     = local.id_label
+  identifier     = local.name_label
   instance_class = "db.t3.small"
 
-  // -- Database
+  # Naming
   db_name              = var.db_name
   db_subnet_group_name = aws_db_subnet_group.this.name
 
-  // -- Authentication
+  # Authentication
   username = var.db_username
   password = jsondecode(data.aws_secretsmanager_secret_version.this.secret_string)["password"]
 
-  // -- Networking
+  # Networking
   availability_zone      = "eu-central-1a"
   publicly_accessible    = false
   vpc_security_group_ids = [aws_security_group.this.id]
 
-  // -- Storage
+  # Storage
   allocated_storage     = 20
   max_allocated_storage = 40
   storage_type          = "gp3"
 
-  // -- Backup
+  # Backup
   backup_retention_period = var.backup_retention_period
   backup_window           = "03:00-04:00"
   copy_tags_to_snapshot   = true
 
-  // -- Maintenance
+  # Maintenance
   apply_immediately          = true
   auto_minor_version_upgrade = true
   maintenance_window         = "sun:05:00-sun:06:00"
 
-  // -- Encryption
+  # Encryption
   kms_key_id        = aws_kms_key.this.arn
   storage_encrypted = true
 
-  // -- Performance Insight
+  # Performance Insight
   performance_insights_enabled          = true
   performance_insights_retention_period = 7
 
-  // -- Monitoring
+  # Monitoring
   enabled_cloudwatch_logs_exports = [
     "postgresql",
     "upgrade",
@@ -49,12 +49,12 @@ resource "aws_db_instance" "this" {
   monitoring_interval = "60"
   monitoring_role_arn = aws_iam_role.this.arn
 
-  // -- Other
+  # Other
   deletion_protection = var.deletion_protection
   skip_final_snapshot = var.skip_final_snapshot
 
   tags = {
-    "Description" = "RDS ${local.id_label}"
-    "Name"        = local.id_label
+    "Description" = "RDS Postgres"
+    "Name"        = local.name_label
   }
 }

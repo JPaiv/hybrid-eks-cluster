@@ -1,34 +1,39 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# ELASTICACHE REDIS
+# Traffic should only come from the EKS worker nodes
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_elasticache_replication_group" "this" {
-  // -- General
+  # General
   apply_immediately          = true
   auto_minor_version_upgrade = true
   description                = "Redis ${var.cache_name}"
   replication_group_id       = local.id_label
 
-  // -- Node
+  # Node
   node_type          = "cache.t3.small"
   num_cache_clusters = 1
   port               = var.port
 
-  // -- Cache
+  # Cache
   engine         = "redis"
   engine_version = "7.1"
 
-  // -- Encryption and authentication
+  # Encryption and authentication
   at_rest_encryption_enabled = true
   auth_token                 = jsondecode(data.aws_secretsmanager_secret_version.this.secret_string)["password"]
   kms_key_id                 = aws_kms_key.cache.arn
   transit_encryption_enabled = true
 
-  // -- Networking
+  # Networking
   network_type       = "ipv4"
   security_group_ids = [aws_security_group.this.id]
   subnet_group_name  = aws_elasticache_subnet_group.this.name
 
-  // -- Updates
+  # Updates
   automatic_failover_enabled = false
 
-  // -- Create Cloudwatch log group for both engine and slow logs
+  # Cloudwatch log group for both engine and slow logs
   dynamic "log_delivery_configuration" {
     for_each = { for k, v in var.elasticache_logs : k => v }
 
@@ -40,7 +45,7 @@ resource "aws_elasticache_replication_group" "this" {
     }
   }
 
-  // -- Ignore changes, or else updates take forever and ever
+  # Ignore these changes, or else updates take forever and ever
   lifecycle {
     ignore_changes = [
       node_type,
@@ -56,11 +61,11 @@ resource "aws_elasticache_replication_group" "this" {
 }
 
 resource "aws_elasticache_subnet_group" "this" {
-  name       = local.id_label
-  subnet_ids = var.priv_subn_ids
+  name       = var.vpc_id
+  subnet_ids = var.priv_subnet_ids
 
   tags = {
-    "Description" = "Redis Cluster ${local.id_label} subnet group"
+    "Description" = "Redis ${local.id_label} subnet group"
     "Name"        = local.id_label
   }
 }

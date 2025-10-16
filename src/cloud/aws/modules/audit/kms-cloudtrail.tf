@@ -1,23 +1,18 @@
 resource "aws_kms_key" "trail" {
-  description = "Cloudtrail ${local.id_label} and S3"
-
-  // -- Lifecycle
   deletion_window_in_days = 7
+  description             = "Cloudtrail ${local.name_label} and S3"
   enable_key_rotation     = true
-
-  // -- Usage
-  key_usage    = "ENCRYPT_DECRYPT"
-  multi_region = false
+  key_usage               = "ENCRYPT_DECRYPT"
+  multi_region            = false
 
   tags = {
-    "Description"                       = "Cloudtrail ${local.id_label} and S3"
-    "Name"                              = "cloudtrail/${local.id_label}"
-    "Unikie:InfoSec:DataClassification" = "Extreme"
+    "Description" = "Cloudtrail ${local.name_label} and S3"
+    "Name"        = "cloudtrail/${local.name_label}"
   }
 }
 
 resource "aws_kms_alias" "trail" {
-  name          = "alias/cloudtrail/${local.id_label}"
+  name          = "alias/cloudtrail/${local.name_label}"
   target_key_id = aws_kms_key.trail.key_id
 }
 
@@ -26,7 +21,7 @@ resource "aws_kms_key_policy" "trail" {
   policy = data.aws_iam_policy_document.trail_kms_permissions.json
 }
 
-// ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/default-kms-key-policy.html
+# ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/default-kms-key-policy.html
 data "aws_iam_policy_document" "trail_kms_permissions" {
   policy_id = "Permissions"
   version   = "2012-10-17"
@@ -74,7 +69,7 @@ data "aws_iam_policy_document" "trail_kms_permissions" {
       test     = "StringEquals"
       variable = "aws:SourceArn"
       values = [
-        "arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/${local.id_label}",
+        "arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/${local.name_label}",
       ]
     }
 

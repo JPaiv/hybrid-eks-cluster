@@ -1,0 +1,26 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# EXTERNAL SECRETS HELM CHART VALUES
+# ---------------------------------------------------------------------------------------------------------------------
+
+serviceAccount:
+  create: true
+  automount: true
+  name: ${IRSA_NAME}
+  annotations:
+    eks.amazonaws.com/role-arn: $${IRSA_ARN}
+  labels:
+    app.kubernetes.io/component: external-secrets
+    app.kubernetes.io/instance: irsa
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/name: ${IRSA_NAME}
+    app.kubernetes.io/part-of: secrets
+    app.kubernetes.io/stage: ${STAGE}
+    app.kubernetes.io/version: ${CHART_VERSION}
+
+resources:
+  limits:
+    cpu: 400m
+    memory: 400Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi

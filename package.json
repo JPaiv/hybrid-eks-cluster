@@ -1,0 +1,16 @@
+{
+    "description": "Portfolio EKS project",
+    "name": "darklightsky",
+    "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/JPaiv/hybrid-eks-cluster.git"
+    },
+    "dependencies": {
+        "semantic-release": "^24.2.9"
+    },
+    "private": true,
+    "devDependencies": {
+        "semantic-release": "^24.2.9"
+    }
+}

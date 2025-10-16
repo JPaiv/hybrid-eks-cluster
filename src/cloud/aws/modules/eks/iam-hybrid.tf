@@ -13,7 +13,7 @@ data "aws_iam_policy_document" "hybrid_trust_relationships" {
   version   = "2012-10-17"
   statement {
     effect = "Allow"
-    sid    = "EnableOnPremSSMAssumeRole"
+    sid    = "AllowServiceAssumeRole"
 
     actions = [
       "sts:AssumeRole",

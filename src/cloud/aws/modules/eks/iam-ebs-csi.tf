@@ -1,4 +1,9 @@
-// -- EKS Add-on EBS-CSI IRSA
+# ---------------------------------------------------------------------------------------------------------------------
+# EBS CSI PERSISTENT VOLUME ADDON IRSA
+# Namespace: kube-system
+# Service account: ebs-csi-controller-sa
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_iam_role" "ebs" {
   assume_role_policy = data.aws_iam_policy_document.ebs_trust_relationships.json
   name               = "${var.id_label}-ebs-csi-irsa"
@@ -10,11 +15,11 @@ resource "aws_iam_role" "ebs" {
 }
 
 data "aws_iam_policy_document" "ebs_trust_relationships" {
-  policy_id = "TrustRelationships"
+  policy_id = "TrustPolicy"
   version   = "2012-10-17"
   statement {
     effect = "Allow"
-    sid    = "EnableIrsa"
+    sid    = "AllowEOidcAssumeRole"
 
     actions = [
       "sts:AssumeRoleWithWebIdentity",
@@ -45,7 +50,7 @@ data "aws_iam_policy_document" "ebs_trust_relationships" {
   }
 }
 
-// ref: https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonEBSCSIDriverPolicy.html
+# ref: https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonEBSCSIDriverPolicy.html
 resource "aws_iam_role_policy_attachment" "ebsAmazonEBSCSIDriverPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   role       = aws_iam_role.ebs.name

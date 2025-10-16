@@ -1,17 +1,22 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# EKS CLUSTER CONTROL PLANE ENCRYPTION
+# Encrypt EKS Cluster control plane etcd and secrets
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_kms_key" "cluster" {
-  // -- General
+  # General
   description = "Control Plane Secrets KMS CM Key"
 
-  // -- Lifecycle
+  # Lifecycle
   deletion_window_in_days = 30
   enable_key_rotation     = true
 
-  // -- Usage
+  # Usage
   key_usage    = "ENCRYPT_DECRYPT"
   multi_region = false
 
   tags = {
-    "Description" = "Control Plane Secrets KMS CM Key"
+    "Description" = "EKS Cluster Control Plane Secrets CMKMS"
     "Name"        = "eks/${var.id_label}"
   }
 }
@@ -29,9 +34,10 @@ resource "aws_kms_key_policy" "cluster" {
 data "aws_iam_policy_document" "cluster_kms_permissions" {
   policy_id = "Permissions"
   version   = "2012-10-17"
+
   statement {
     effect = "Allow"
-    sid    = "Enable IAM Root Permissions"
+    sid    = "Enable IAM User"
 
     actions = [
       "kms:*",

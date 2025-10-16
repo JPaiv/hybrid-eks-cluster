@@ -1,0 +1,17 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ${NAME_LABEL}
+  labels:
+    app.kubernetes.io/component: loki
+    app.kubernetes.io/instance: storage
+    app.kubernetes.io/managed-by: manifest
+    app.kubernetes.io/name: ${NAME_LABEL}
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/stage: ${STAGE}
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  encrypted: "true"
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer

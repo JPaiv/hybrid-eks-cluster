@@ -1,0 +1,25 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# EXTERNAL DNS HELM CHART VALUES
+# ---------------------------------------------------------------------------------------------------------------------
+
+provider:
+  name: aws
+
+txtOwnerId: ${TXT_OWNER_IP}
+
+serviceAccount:
+  name: ${IRSA_NAME}
+  annotations:
+    eks.amazonaws.com/role-arn: ${IRSA_ARN}
+  labels:
+    app.kubernetes.io/component: external-dns
+    app.kubernetes.io/instance: irsa
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/name: ${IRSA_NAME}
+    app.kubernetes.io/part-of: networking
+    app.kubernetes.io/stage: ${STAGE}
+    app.kubernetes.io/version: ${CHART_VERSION}
+
+env:
+  - name: AWS_DEFAULT_REGION
+    value: ${REGION}

@@ -1,0 +1,221 @@
+crds:
+  # Install and upgrade CRDs
+  install: true
+  # Keep CRDs during chart uninstall
+  keep: false
+
+global:
+  domain: ${INGRESS_URL}
+
+externalRedis:
+  # External Redis server host
+  host: ${REDIS_ENDPOINT}
+  # External Redis server port
+  port: 6379
+  # When it's set, the `externalRedis.username` and `externalRedis.password` parameters are ignored
+  existingSecret: ${REDIS_SECRET}
+  # External Redis Secret labels
+  labels:
+    app.kubernetes.io/component: argo-cd
+    app.kubernetes.io/instance: external-secret
+    app.kubernetes.io/managed-by: tofu-helm
+    app.kubernetes.io/name: ${NAME_LABEL}
+    app.kubernetes.io/part-of: ci-cd
+    app.kubernetes.io/stage: ${STAGE}
+
+controller:
+  replicas: 2
+  serviceAccount:
+    create: true
+    labels:
+      app.kubernetes.io/component: argo-cd
+      app.kubernetes.io/instance: controller
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${NAME_LABEL}
+      app.kubernetes.io/part-of: ci-cd
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+  resources:
+    requests:
+      cpu: 200m
+      memory: 200Mi
+    limits:
+      cpu: 1000m
+      memory: 1000Mi
+
+# General Argo CD configuration.
+# Any values you put under `.configs.cm` are passed to argocd-cm ConfigMap.
+configs:
+  # The argocd-cm configmap
+  # Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
+  secret:
+    createSecret: true
+  cm:
+    create: true
+    admin.enabled: true
+    accounts.devops: apiKey, login
+  rbac:
+    create: false
+    policy.default: role:readonly
+    # Role definitions and bindings are in the form:
+    #  g, subject, inherited-subject
+    policy.csv: |
+      g, devops, role:admin
+      p, role:org-admin, applications, *, */*, allow
+      p, role:org-admin, clusters, get, *, allow
+      p, role:org-admin, exec, create, */*, allow
+      p, role:org-admin, logs, get, *, allow
+      p, role:org-admin, repositories, *, *, allow
+    scopes: "[groups, email, repositories]"
+
+repoServer:
+  replicas: 2
+  autoscaling:
+    enabled: true
+    maxReplicas: 10
+    minReplicas: 2
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  serviceAccount:
+    create: false
+    labels:
+      app.kubernetes.io/component: argo-cd
+      app.kubernetes.io/instance: repoServer
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${NAME_LABEL}
+      app.kubernetes.io/part-of: ci-cd
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1000Mi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+
+# Kubernetes controller for the Argo-CD ApplicationSet CRD
+applicationSet:
+  replicas: 2
+  serviceAccount:
+    create: true
+    labels:
+      app.kubernetes.io/component: argo-cd
+      app.kubernetes.io/instance: applicationSet
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${NAME_LABEL}
+      app.kubernetes.io/part-of: ci-cd
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+  resources:
+    requests:
+      cpu: 512m
+      memory: 500Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# ArgoCD monitor to notify changes in application state.
+notifications:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1000Mi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+  # Notifications controller log format
+  # One of: text or json
+  logFormat: json
+  # Notifications controller log level.
+  # One of: debug, info, warn, error
+  logLevel: info
+
+# gRPC/REST Server to consume WebUI, CLI and CI/CD commands
+server:
+  replicas: 2
+  autoscaling:
+    enabled: true
+    maxReplicas: 10
+    minReplicas: 2
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+  service:
+    create: true
+    labels:
+      app.kubernetes.io/component: argo-cd
+      app.kubernetes.io/instance: server
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${NAME_LABEL}
+      app.kubernetes.io/part-of: ci-cd
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+  serviceAccount:
+    create: true
+    name: ${IRSA_NAME}
+    annotations:
+      eks.amazonaws.com/role-arn: ${IRSA_ARN}
+    labels:
+      app.kubernetes.io/component: argo-cd
+      app.kubernetes.io/instance: server
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${IRSA_NAME}
+      app.kubernetes.io/part-of: ci-cd
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    hosts:
+      - ${INGRESS_URL}
+    tls:
+      - hosts:
+          - ${INGRESS_URL}
+    annotations:
+      # Redirect & protocol settings
+      alb.ingress.kubernetes.io/actions.ssl-redirect: >-
+        {"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+      alb.ingress.kubernetes.io/backend-protocol: HTTPS
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-FS-1-2-2019-08
+      # Load balancer settings
+      alb.ingress.kubernetes.io/load-balancer-name: ${NAME_LABEL}
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/load-balancer-attributes: routing.http2.enabled=true
+      alb.ingress.kubernetes.io/target-type: ip
+      # Health check configuration
+      alb.ingress.kubernetes.io/healthcheck-path: /healthz
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
+      alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+      alb.ingress.kubernetes.io/success-codes: 200,404
+      # Tagging / metadata
+      alb.ingress.kubernetes.io/tags: Stage=${STAGE},Name=${NAME_LABEL},Managed-by=tofu-helm,Version=${CHART_VERSION},Component=argo-cd,Instance=server
+    labels:
+      app.kubernetes.io/component: argo-cd
+      app.kubernetes.io/instance: server
+      app.kubernetes.io/managed-by: tofu-helm
+      app.kubernetes.io/name: ${NAME_LABEL}
+      app.kubernetes.io/part-of: ci-cd
+      app.kubernetes.io/stage: ${STAGE}
+      app.kubernetes.io/version: ${CHART_VERSION}
+  ingressGrpc:
+    enabled: true
+    isAWSALB: true
+    awsALB:
+      serviceType: ClusterIP
+      backendProtocolVersion: GRPC
+    hosts:
+      - ${INGRESS_URL}
+
+# Disable default self-hosted Redis
+redis-ha:
+  enabled: false
+redis:
+  enabled: false

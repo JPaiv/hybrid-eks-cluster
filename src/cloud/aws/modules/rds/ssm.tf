@@ -1,7 +1,6 @@
 resource "aws_ssm_parameter" "this" {
-  // -- General
-  description = "RDS instance ${local.id_label} connection parameters"
-  name        = "/rds/${local.id_label}"
+  description = "RDS instance connection parameters"
+  name        = "/rds/${local.name_label}"
   type        = "String"
 
   value = jsonencode(
@@ -14,7 +13,7 @@ resource "aws_ssm_parameter" "this" {
   )
 
   tags = {
-    "Description" = "RDS instance ${local.id_label} connection parameters"
-    "Name"        = "/rds/${local.id_label}"
+    "Description" = "RDS instance connection parameters"
+    "Name"        = "/rds/${local.name_label}"
   }
 }

@@ -1,10 +1,10 @@
 resource "aws_iam_role" "this" {
   assume_role_policy = data.aws_iam_policy_document.ctrail_trusted_relationships.json
-  name               = local.id_label
+  name               = local.name_label
 
   tags = {
-    "Description" = "Cloudtrail"
-    "Name"        = local.id_label
+    "Description" = "Cloudtrail ${local.name_label} Role"
+    "Name"        = local.name_label
   }
 }
 
@@ -40,7 +40,7 @@ resource "aws_iam_policy" "this" {
   policy = data.aws_iam_policy_document.ctrail_permissions.json
 
   tags = {
-    "Description" = "Cloudtrail ${local.id_label} Permissions Policy"
+    "Description" = "Cloudtrail ${local.name_label} Permissions Policy"
     "Name"        = "${aws_iam_role.this.id}-policy"
   }
 }

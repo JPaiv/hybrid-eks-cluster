@@ -5,16 +5,16 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 locals {
-  # -- Automatically load account-level variables
+  # Automatically load account-level variables
   account_vars = read_terragrunt_config(find_in_parent_folders("account.hcl"))
 
-  # -- Automatically load region-level variables
+  # Automatically load region-level variables
   region_vars = read_terragrunt_config(find_in_parent_folders("region.hcl"))
 
-  # -- Automatically load environment-level variables
+  # Automatically load environment-level variables
   environment_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
 
-  # -- Extract the variables we need for easy access
+  # Extract the variables we need for easy access
   account_name = local.account_vars.locals.account_name
   account_id   = local.account_vars.locals.aws_account_id
   aws_region   = local.region_vars.locals.aws_region
@@ -22,14 +22,14 @@ locals {
   environment = local.environment_vars.locals.environment
 }
 
-# -- Generate an AWS provider block
+# Generate an AWS provider block
 generate "provider" {
   path      = "provider.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
 provider "aws" {
   region = "${local.aws_region}"
-  // -- Only these AWS Account IDs may be operated on by this template
+  # Only these AWS Account IDs may be operated on by this template
   allowed_account_ids = ["${local.account_id}"]
   default_tags {
   tags = {
@@ -53,7 +53,7 @@ provider "aws" {
 EOF
 }
 
-# -- Configure Terragrunt to automatically store tfstate files in an S3 bucket
+# Configure Terragrunt to automatically store tfstate files in an S3 bucket
 remote_state {
   backend = "s3"
   config = {
@@ -75,15 +75,14 @@ remote_state {
 # `terragrunt.hcl` config via the include block.
 # ---------------------------------------------------------------------------------------------------------------------
 
-# --  Configure root level variables that all resources can inherit. This is especially helpful with multi-account configs
-# -- where terraform_remote_state data sources are placed directly into the modules.
+# Configure root level variables that all resources can inherit. This is especially helpful with multi-account configs
+# where terraform_remote_state data sources are placed directly into the modules.
 inputs = merge(
   local.account_vars.locals,
   local.region_vars.locals,
   local.environment_vars.locals,
 )
 
-# -- Generate an AWS provider block
 generate "id_label" {
   path      = "id-label.tf"
   if_exists = "overwrite_terragrunt"
