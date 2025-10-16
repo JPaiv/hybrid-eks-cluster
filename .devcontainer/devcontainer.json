@@ -60,8 +60,12 @@
         // Disable Git emojis for VS Code Conventional Commit extension
         "conventionalCommits.gitmoji": false
       },
-      "[go]": {
-        "editor.defaultFormatter": "golang.Go",
+      "[helm]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml",
+        "editor.formatOnSave": true
+      },
+      "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true
       },
       "[json]": {
@@ -72,13 +76,21 @@
         "editor.defaultFormatter": "ZainChen.json",
         "editor.formatOnSave": true
       },
+      "[makefile]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-vscode.makefile-tools"
+      },
+      "[markdown]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+      },
       "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true
       },
-      "[rust]": {
-        "editor.defaultFormatter": "rust-lang.rust-analyzer",
-        "editor.formatOnSave": true
+      "[shellscript]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "foxundermoon.shell-format"
       },
       "[terraform]": {
         "editor.defaultFormatter": "hashicorp.terraform",
@@ -88,6 +100,14 @@
         "editor.defaultFormatter": "HashiCorp.HCL",
         "editor.formatOnSave": true
       },
+      "[toml]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "tamasfe.even-better-toml"
+      },
+      "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+      },
       "[yaml": {
         "editor.defaultFormatter": "redhat.vscode-yaml",
         "editor.formatOnSave": true
@@ -95,16 +115,13 @@
       "extensions": [
         "AmazonWebServices.aws-toolkit-vscode",
         "DerekCAshmore.terraform-docs",
-        "equinusocio.vsc-material-theme",
-        "equinusocio.vsc-material-theme-icons",
         "HashiCorp.HCL",
         "Tyriar.sort-lines",
         "aws-scripting-guy.cform",
-        "charliermarsh.ruff",
         "eamodio.gitlens",
         "foxundermoon.shell-format",
-        "golang.Go",
         "hashicorp.terraform",
+        "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
         "ms-kubernetes-tools.vscode-kubernetes-tools",
         "ms-python.black-formatter",
@@ -112,18 +129,32 @@
         "ms-vscode.makefile-tools",
         "njpwerner.autodocstring",
         "redhat.vscode-yaml",
-        "rust-lang.rust-analyzer",
         "shardulm94.trailing-spaces",
-        "snyk-security.snyk-vulnerability-scanner",
         "tamasfe.even-better-toml",
-        "teabyii.ayu",
         "tfsec.tfsec",
-        "vivaxy.vscode-conventional-commits"
+        "tilt-dev.tiltfile",
+        "vivaxy.vscode-conventional-commits",
+        "yzhang.markdown-all-in-one"
       ]
     }
   },
   "remoteUser": "root",
-  "features": {},
-  "mounts": [],
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2.5.4": {
+      "gid": "1000",
+      "installZsh": "true",
+      "uid": "1000",
+      "upgradePackages": "false",
+      "username": "vscode"
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    // Mount SSH secrets to container
+    "source=${localEnv:HOME}/.ssh/ssh,target=/root/.ssh,type=bind,readonly",
+    // Bind host machine Docker socker into the devcontainer socket
+    // Processes Docker commands in the host name instead of the dev container
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
   "containerEnv": {}
 }
