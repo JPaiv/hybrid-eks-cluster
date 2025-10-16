@@ -17,17 +17,3 @@ resource "aws_internet_gateway" "this" {
     "Name"        = "${var.id_label}-vpc-gw"
   }
 }
-
-resource "aws_route_table" "vpc_gw" {
-  vpc_id = aws_vpc.this.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.this.id
-  }
-
-  tags = {
-    "Description" = "Route VPC traffic trough the Internet Gateway"
-    "Name"        = "${var.id_label}-vpc-gw-rt"
-  }
-}
