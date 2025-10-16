@@ -14,7 +14,7 @@ resource "aws_accessanalyzer_analyzer" "unsed_access" {
 
   configuration {
     unused_access {
-      unused_access_age = 90 // -- 3 months
+      unused_access_age = 90 # 3 months
     }
   }
 

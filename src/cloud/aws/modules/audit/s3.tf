@@ -1,11 +1,10 @@
-// -- Storage Ctrail events
 resource "aws_s3_bucket" "trail" {
-  bucket        = local.id_label
+  bucket        = local.name_label
   force_destroy = false
 
   tags = {
-    "Description" = "Cloudtrail ${local.id_label} Logs Storage"
-    "Name"        = local.id_label
+    "Description" = "Cloudtrail ${local.name_label} Logs Storage"
+    "Name"        = local.name_label
   }
 }
 
@@ -34,7 +33,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "trail" {
     status = "Enabled"
 
     expiration {
-      days = 1826 // -- 5 years
+      days = 1826 # 5 years
     }
 
     filter {
@@ -42,7 +41,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "trail" {
     }
 
     transition {
-      days          = 90 // -- 3 months
+      days          = 90 # 3 months
       storage_class = "DEEP_ARCHIVE"
     }
   }
@@ -55,7 +54,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "trail" {
   rule {
     bucket_key_enabled = true
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.trail.arn // -- Use ARN instead of the key id
+      kms_master_key_id = aws_kms_key.trail.arn
       sse_algorithm     = "aws:kms"
     }
   }
@@ -85,7 +84,7 @@ data "aws_iam_policy_document" "trail_permissions" {
       test     = "StringEquals"
       variable = "aws:SourceArn"
       values = [
-        "arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/${local.id_label}",
+        "arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/${local.name_label}",
       ]
     }
 
@@ -121,7 +120,7 @@ data "aws_iam_policy_document" "trail_permissions" {
       test     = "StringEquals"
       variable = "aws:SourceArn"
       values = [
-        "arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/${local.id_label}",
+        "arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/${local.name_label}",
       ]
     }
 

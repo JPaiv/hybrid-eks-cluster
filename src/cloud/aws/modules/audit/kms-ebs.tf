@@ -1,18 +1,13 @@
 resource "aws_kms_key" "ebs" {
-  description = "EBS Volumes Default KMS CM Key"
-
-  // -- Lifecycle
   deletion_window_in_days = 7
+  description             = "EBS Volumes Default KMS CM Key"
   enable_key_rotation     = true
-
-  // -- Usage
-  key_usage    = "ENCRYPT_DECRYPT"
-  multi_region = false
+  key_usage               = "ENCRYPT_DECRYPT"
+  multi_region            = false
 
   tags = {
-    "Description"                       = "EBS Volumes Default KMS CM Key"
-    "Name"                              = "ebs/default"
-    "Unikie:InfoSec:DataClassification" = "Extreme"
+    "Description" = "EBS Volumes Default KMS CM Key"
+    "Name"        = "ebs/default"
   }
 }
 
