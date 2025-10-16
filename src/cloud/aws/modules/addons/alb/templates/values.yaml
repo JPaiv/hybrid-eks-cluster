@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# AWS LB CONTROLLER HELM CHART
+# ref: https://github.com/aws/eks-charts/blob/master/stable/aws-load-balancer-controller/values.yaml
+# ---------------------------------------------------------------------------------------------------------------------
+
+clusterName: ${CLUSTER_ID}
+region: ${REGION}
+vpcId: ${VPC_ID}
+
+serviceAccount:
+  create: true
+  name: ${IRSA_NAME}
+  annotations:
+    eks.amazonaws.com/role-arn: ${IRSA_ARN}
+    eks.amazonaws.com/sts-regional-endpoints: "true"
+  labels:
+    app.kubernetes.io/component: aws-lb-controller
+    app.kubernetes.io/instance: irsa
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/name: ${IRSA_NAME}
+    app.kubernetes.io/part-of: networking
+    app.kubernetes.io/stage: ${STAGE}
+    app.kubernetes.io/version: ${CHART_VERSION}
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 300m
+    memory: 300Mi
+
+autoscaling:
+  enabled: true
+  maxReplicas: 6
+  minReplicas: 2
+  targetCPUUtilizationPercentage: 80
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
