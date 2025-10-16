@@ -1,6 +1,8 @@
 {
     "conventionalCommits.scopes": [
         "modules",
-        "prod"
+        "prod",
+        "gha",
+        "devcontainer"
     ]
 }
