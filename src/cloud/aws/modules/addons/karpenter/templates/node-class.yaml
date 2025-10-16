@@ -1,0 +1,58 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: ${NAME_LABEL}
+  labels:
+    app.kubernetes.io/component: Karpenter
+    app.kubernetes.io/instance: EC2NodeClass
+    app.kubernetes.io/managed-by: manifest
+    app.kubernetes.io/name: ${NAME_LABEL}
+    app.kubernetes.io/part-of: autoscaling
+    app.kubernetes.io/stage: ${STAGE}
+    app.kubernetes.io/version: ${CHART_VERSION}
+    type: karpenter
+spec:
+  amiSelectorTerms:
+    - alias: bottlerocket@latest
+  detailedMonitoring: true
+  # Optional
+  # EC2 Worker Node IRSA
+  role: ${NODE_ROLE_NAME}
+  # Required
+  # Discovers subnets to attach to instances
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: ${CLUSTER_ID}
+  # Required
+  # Discovers security groups to attach to instances based on resource tags
+  securityGroupSelectorTerms:
+    - tags:
+        aws:eks:cluster-name: ${CLUSTER_ID}
+        kubernetes.io/cluster/${CLUSTER_ID}: owned
+  # Optional
+  # Propagates tags to underlying EC2 resources
+  tags:
+    Name: ${NAME_LABEL}
+    Description: "Karpenter Managed EC2 Bottlerocket Worker Node"
+    karpenter.sh/discovery: ${CLUSTER_ID}
+  # Optional
+  # Configures storage devices for the instance
+  # Never use unencrypted!
+  blockDeviceMappings:
+    # Root device
+    - deviceName: /dev/xvda
+      ebs:
+        deleteOnTermination: true
+        encrypted: true
+        iops: 3000
+        volumeSize: 30Gi
+        volumeType: gp3
+    # Data device
+    # Container resources such as images and logs
+    - deviceName: /dev/xvdb
+      ebs:
+        deleteOnTermination: true
+        encrypted: true
+        iops: 3000
+        volumeSize: 10Gi
+        volumeType: gp3
