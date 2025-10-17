@@ -13,6 +13,7 @@ jobs:
       id-token: write # Use of OIDC for npm provenance
       issues: write # Comment on released issues
       pull-requests: write # Comment on released pull requests
+      repository-projects: write # Write to Git objects database
 
     steps:
       - name: Checkout
