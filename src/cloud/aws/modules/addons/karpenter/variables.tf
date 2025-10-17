@@ -1,9 +1,17 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# REQUIRED MODULE PARAMETERS
+# CLUSTER
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "cluster_id" {
   description = "EKS Cluster id/name; same as the id_label"
+  nullable    = false
+  sensitive   = false
+  type        = string
+}
+
+variable "namespace" {
+  description = "Helm chart install namespace"
+  default     = "kube-system"
   nullable    = false
   sensitive   = false
   type        = string
@@ -30,6 +38,10 @@ variable "node_role_name" {
   type      = string
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# AUTH
+# ---------------------------------------------------------------------------------------------------------------------
+
 variable "oidc_identity_issuer_url" {
   description = "OIDC Identity issues URL from the EKS Cluster"
   nullable    = false
@@ -44,16 +56,12 @@ variable "oidc_provider_arn" {
   type        = string
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# HELM
+# ---------------------------------------------------------------------------------------------------------------------
+
 variable "chart_version" {
   description = "Helm chart version -- ref: https://gallery.ecr.aws/karpenter/karpenter"
-  nullable    = false
-  sensitive   = false
-  type        = string
-}
-
-variable "namespace" {
-  description = "Helm chart install namespace"
-  default     = "kube-system"
   nullable    = false
   sensitive   = false
   type        = string

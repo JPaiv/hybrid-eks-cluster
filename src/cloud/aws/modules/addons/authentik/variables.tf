@@ -1,90 +1,117 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# CLUSTER
+# ---------------------------------------------------------------------------------------------------------------------
+
 variable "cluster_id" {
   description = "EKS Cluster Name"
+  type        = string
   nullable    = false
   sensitive   = false
-  type        = string
-}
-
-variable "oidc_provider_arn" {
-  description = "EKS Cluster OIDC Provider ARN"
-  nullable    = false
-  sensitive   = false
-  type        = string
-}
-
-variable "oidc_identity_issuer_url" {
-  description = "EKS Cluster OIDC identity issuer url"
-  nullable    = false
-  sensitive   = false
-  type        = string
 }
 
 variable "namespace" {
+  description = "Helm chart installation namespace; must exist prior to install!"
+  type        = string
   default     = "auth"
-  description = "Helm chart installation namespace; must exists priot to install!"
   nullable    = false
   sensitive   = false
-  type        = string
 }
 
-variable "chart_version" {
-  description = "Ref: https://artifacthub.io/packages/helm/goauthentik/authentik"
+# ---------------------------------------------------------------------------------------------------------------------
+# AUTHENTICATION
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "oidc_provider_arn" {
+  description = "EKS Cluster OIDC Provider ARN"
+  type        = string
   nullable    = false
   sensitive   = false
-  type        = string
 }
+
+variable "oidc_identity_issuer_url" {
+  description = "EKS Cluster OIDC identity issuer URL"
+  type        = string
+  nullable    = false
+  sensitive   = false
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# SECRETS
+# ---------------------------------------------------------------------------------------------------------------------
 
 variable "vault_skey" {
-  description = "AWS Secrets Manager secret with the Secret Key for signing token and IDs"
+  description = "AWS Secrets Manager secret with the Secret Key for signing tokens and IDs"
+  type        = string
   nullable    = false
   sensitive   = false
-  type        = string
 }
 
 variable "vault_redis" {
-  description = "AWS Secrets Manager secret with the Secret Key for signing token and IDs"
+  description = "AWS Secrets Manager secret containing Redis credentials"
+  type        = string
   nullable    = false
   sensitive   = false
-  type        = string
 }
 
 variable "vault_rds" {
-  description = "AWS Secrets Manager secret with the Secret Key for signing token and IDs"
+  description = "AWS Secrets Manager secret containing RDS credentials"
+  type        = string
   nullable    = false
   sensitive   = false
-  type        = string
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# DATABASE
+# ---------------------------------------------------------------------------------------------------------------------
 
 variable "rds_ssm" {
   description = "AWS Parameter Store parameter with RDS module outputs"
+  type        = string
   nullable    = false
   sensitive   = false
-  type        = string
 }
-
 
 variable "redis_ssm" {
-  description = "Redis cache configs SSM Parameter store name"
+  description = "Redis cache configs SSM Parameter Store name"
+  type        = string
   nullable    = false
   sensitive   = false
-  type        = string
 }
 
-variable "abac_tags" {
-  description = "Map of attribute-based access control (ABAC) tags to apply, where the key is the tag name and the value is an object of tag details."
-  default     = null
-  nullable    = true
+# ---------------------------------------------------------------------------------------------------------------------
+# HELM
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "chart_version" {
+  description = "Ref: https://artifacthub.io/packages/helm/goauthentik/authentik"
+  type        = string
+  nullable    = false
   sensitive   = false
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# NETWORKING
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "ingress_url" {
+  description = "Ingress hostname"
+  type        = string
+  nullable    = false
+  sensitive   = false
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ABAC
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "abac_tags" {
+  description = "Map of attribute-based access control tags to apply, where the key is the tag name and the value is an object"
   type = map(object({
     tag_type    = string
     abac_key    = string
     abac_values = list(string)
   }))
-}
-
-variable "ingress_url" {
-  description = "Ingress base hostname"
-  nullable    = false
-  sensitive   = false
-  type        = string
+  default   = null
+  nullable  = true
+  sensitive = false
 }

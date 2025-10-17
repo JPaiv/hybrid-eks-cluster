@@ -29,7 +29,7 @@ resource "helm_release" "this" {
       CLUSTER_ID         = var.cluster_id
       IRSA_ARN           = aws_iam_role.this.arn
       IRSA_NAME          = aws_iam_role.this.name
-      LOKI_LBALANCER_URL = var.loki_lbalancer_url
+      LOKI_LBALANCER_URL = var.loki_gateway_url
       STAGE              = local.stage
       }
     )

@@ -1,13 +1,25 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# REQUIRED MODULE PARAMETERS
+# CLUSTER
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "cluster_id" {
-  description = "The name of the EKS cluster."
+  description = "EKS Cluster ID"
+  type        = string
   nullable    = false
   sensitive   = false
-  type        = string
 }
+
+variable "namespace" {
+  description = "ArgoCD install namespace; should not be kube-system or other Kubernetes system namespace"
+  type        = string
+  default     = "ci-cd"
+  nullable    = false
+  sensitive   = false
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# AUTH
+# ---------------------------------------------------------------------------------------------------------------------
 
 variable "oidc_provider_arn" {
   description = "The ARN of the EKS cluster's OIDC provider."
@@ -23,12 +35,20 @@ variable "oidc_identity_issuer_url" {
   type        = string
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# NETWORKING
+# ---------------------------------------------------------------------------------------------------------------------
+
 variable "vpc_id" {
   description = "The ID of the VPC associated with the EKS cluster."
   nullable    = false
   sensitive   = false
   type        = string
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# HELM
+# ---------------------------------------------------------------------------------------------------------------------
 
 variable "chart_version" {
   description = "The version of the AWS Load Balancer Controller Helm chart (see: https://artifacthub.io/packages/helm/aws/aws-load-balancer-controller)."
@@ -37,14 +57,3 @@ variable "chart_version" {
   type        = string
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# OPTIONAL MODULE PARAMETERS
-# ---------------------------------------------------------------------------------------------------------------------
-
-variable "namespace" {
-  default     = "kube-system"
-  description = "The namespace where the AWS Load Balancer Controller will be deployed. Defaults to kube-system."
-  nullable    = false
-  sensitive   = false
-  type        = string
-}
