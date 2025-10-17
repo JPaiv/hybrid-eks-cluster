@@ -74,6 +74,7 @@ module "authentik" {
   vault_rds   = "ums-ec1-prod-core-vault-authentik-rds"
   vault_redis = "ums-ec1-prod-core-vault-cache-shared"
   vault_skey  = "${module.id_label.id}-vault-authentik-skey"
+  ingress_url = "placeholder.com"
 
   abac_tags = {
     vaults = {

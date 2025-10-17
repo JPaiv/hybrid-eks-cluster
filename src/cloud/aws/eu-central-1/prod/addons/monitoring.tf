@@ -148,6 +148,7 @@ module "kube_prometheus_stack" {
   cluster_id               = local.eks_parameters.cluster_id
   oidc_identity_issuer_url = local.eks_parameters.oidc_identity_issuer_url
   oidc_provider_arn        = local.eks_parameters.oidc_provider_arn
+  ingress_url              = "placeholder.com"
 
   # Secrets
   vault_name = "${module.id_label.id}-vault-monitoring-grafana"
