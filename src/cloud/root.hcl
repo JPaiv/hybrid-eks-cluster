@@ -15,11 +15,12 @@ locals {
   environment_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
 
   # Extract the variables we need for easy access
-  account_name = local.account_vars.locals.account_name
   account_id   = local.account_vars.locals.aws_account_id
+  account_name = local.account_vars.locals.account_name
   aws_region   = local.region_vars.locals.aws_region
   aws_region_short = local.region_vars.locals.aws_region_short
   environment = local.environment_vars.locals.environment
+  state_bucket = "nes-${local.aws_region_short}-${local.environment}-tf-state"
 }
 
 # Generate an AWS provider block
@@ -29,24 +30,23 @@ generate "provider" {
   contents  = <<EOF
 provider "aws" {
   region = "${local.aws_region}"
+
   # Only these AWS Account IDs may be operated on by this template
   allowed_account_ids = ["${local.account_id}"]
   default_tags {
   tags = {
-      "Description"                  = "Placeholder"
-      "Name"                         = "Placeholder"
-      "DevOps:DevOps:CI/CD"          = "false/Local"
-      "DevOps:DevOps:Cronjob"        = "false"
-      "DevOps:DevOps:Email"          = ""
-      "DevOps:DevOps:LockID"         = "${local.account_name}-${local.aws_region}-${local.environment}-tf-state-LockID"
-      "DevOps:DevOps:ManagedBy"      = "OpenTofu/Terragrunt"
-      "DevOps:DevOps:Region"         = "${local.account_name}-${local.aws_region}"
-      "DevOps:DevOps:Stage"          = "${local.environment}"
-      "DevOps:DevOps:StateBucket"    = "${local.account_name}-${local.aws_region}-${local.environment}-tf-state"
-      "DevOps:DevOps:StateBucketKey" = "${path_relative_to_include()}/tf.tfstate"
-      "DevOps:DevOps:Terratest"      = "false"
-      "DevOps:DevOps:UpdateDatetime" = "${timestamp()}"
-      "DevOps:Development:Repo"      = "Placeholder"
+      "Description"           = "Missing"
+      "Name"                  = "Missing"
+      "DevOps:CI/CD"          = "False/Local"
+      "DevOps:Cronjob"        = "False"
+      "DevOps:LockID"         = "${local.state_bucket}-LockID"
+      "DevOps:ManagedBy"      = "OpenTofu/Terragrunt"
+      "DevOps:Region"         = "${local.aws_region_short}"
+      "DevOps:Stage"          = "${local.environment}"
+      "DevOps:StateBucket"    = "${local.state_bucket}"
+      "DevOps:StateBucketKey" = "${path_relative_to_include()}/tf.tfstate"
+      "DevOps:Terratest"      = "False"
+      "DevOps:UpdateDatetime" = "${timestamp()}"
     }
   }
 }
@@ -57,8 +57,8 @@ EOF
 remote_state {
   backend = "s3"
   config = {
-    bucket         = "${local.account_name}-${local.aws_region}-${local.environment}-tf-state"
-    dynamodb_table = "${local.account_name}-${local.aws_region}-${local.environment}-tf-state-LockID"
+    bucket         = "${local.state_bucket}"
+    dynamodb_table = "${local.state_bucket}-LockID"
     encrypt        = true
     key            = "${path_relative_to_include()}/tf.tfstate"
     region         = local.aws_region
@@ -83,6 +83,7 @@ inputs = merge(
   local.environment_vars.locals,
 )
 
+# Generate shared unique ID label
 generate "id_label" {
   path      = "id-label.tf"
   if_exists = "overwrite_terragrunt"
@@ -91,7 +92,7 @@ module "id_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
 
-  namespace      = "${local.account_name}"
+  namespace      = "nes"
   environment    = "${local.aws_region_short}"
   stage          = "${local.environment}"
   name           = "${basename(get_terragrunt_dir())}"
