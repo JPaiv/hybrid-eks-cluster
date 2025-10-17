@@ -22,6 +22,11 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
+      - name: tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          tfsec_args: --soft-fail
+
       - name: Render terraform docs and push changes back to PR
         uses: terraform-docs/gh-actions@main
         with:
