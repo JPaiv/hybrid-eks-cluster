@@ -1,9 +1,6 @@
 # Hybrid EKS Cluster
 
-A Terragrunt-driven, opinionated Terraform setup to provision production-grade Amazon EKS clusters.
-
-This project builds upon Particule’s tEKS framework, combining Terraform modules and Terragrunt orchestration to deliver a ready-to-run EKS cluster with sensible defaults and built‑in add‑ons
-
+EKS Cluster with both on-prem and cloud worker nodes.
 
 ## 🧩 What It Does
     Orchestrates infrastructure using Terraform and Terragrunt
