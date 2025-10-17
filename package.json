@@ -1,6 +1,6 @@
 {
     "description": "Portfolio EKS project",
-    "name": "darklightsky",
+    "name": "hybrid-eks-cluster",
     "version": "1.0.0",
     "repository": {
         "type": "git",
