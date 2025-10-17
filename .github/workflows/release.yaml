@@ -8,11 +8,7 @@ jobs:
   semantic-release:
     name: Semantic Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # Publish a GitHub release
-      id-token: write # Use of OIDC for npm provenance
-      issues: write # Comment on released issues
-      pull-requests: write # Comment on released pull requests
+    permissions: write-all
 
     steps:
       - name: Checkout
