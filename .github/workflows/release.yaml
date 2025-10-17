@@ -33,7 +33,9 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         with:
           extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/git
+            "@semantic-release/commit-analyzer",
+            "@semantic-release/github",
+            "@semantic-release/npm",
+            "@semantic-release/release-notes-generator"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
