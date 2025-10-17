@@ -22,9 +22,6 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
-      - name: Fix Git permissions
-        run: sudo chown -R $(whoami) .git
-
       - name: Render terraform docs and push changes back to PR
         uses: terraform-docs/gh-actions@main
         with:
