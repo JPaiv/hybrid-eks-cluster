@@ -1,0 +1,12 @@
+{
+  "name": "hybrid-eks-cluster",
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/github",
+    "@semantic-release/npm",
+    "@semantic-release/release-notes-generator"
+  ],
+  "publishConfig": {
+    "access": "restricted"
+  }
+}
