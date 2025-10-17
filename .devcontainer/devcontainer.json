@@ -150,11 +150,11 @@
   },
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace,type=bind",
-    // Mount SSH secrets to container
-    "source=${localEnv:HOME}/.ssh/ssh,target=/root/.ssh,type=bind,readonly",
     // Bind host machine Docker socker into the devcontainer socket
     // Processes Docker commands in the host name instead of the dev container
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-  "containerEnv": {}
+  "containerEnv": {
+    "AWS_REGION": "eu-north-1" // Placeholder: replace with your own AWS region
+  }
 }
